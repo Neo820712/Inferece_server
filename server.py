@@ -12,6 +12,8 @@ import uuid
 
 from flask import Flask, Response, jsonify, request, stream_with_context
 
+from tool_parsing import parse_tool_calls, strip_tool_calls
+
 
 def _completion(text: str, model_name: str) -> dict:
     return {
@@ -23,6 +25,20 @@ def _completion(text: str, model_name: str) -> dict:
             "index": 0,
             "message": {"role": "assistant", "content": text},
             "finish_reason": "stop",
+        }],
+    }
+
+
+def _completion_tool_calls(tool_calls, content, model_name):
+    return {
+        "id": "chatcmpl-" + uuid.uuid4().hex,
+        "object": "chat.completion",
+        "created": int(time.time()),
+        "model": model_name,
+        "choices": [{
+            "index": 0,
+            "message": {"role": "assistant", "content": content or None, "tool_calls": tool_calls},
+            "finish_reason": "tool_calls",
         }],
     }
 
@@ -68,7 +84,13 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov") -> Flask:
             return Response(stream_with_context(
                 _sse(engine, messages, max_tokens, temperature, model_name)),
                 mimetype="text/event-stream")
-        text = engine.generate(messages, max_new_tokens=max_tokens, temperature=temperature)
+        tools = body.get("tools")
+        text = engine.generate(messages, max_new_tokens=max_tokens,
+                               temperature=temperature, tools=tools)
+        if tools:
+            calls = parse_tool_calls(text)
+            if calls:
+                return jsonify(_completion_tool_calls(calls, strip_tool_calls(text), model_name))
         return jsonify(_completion(text, model_name))
 
     return app

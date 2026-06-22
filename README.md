@@ -17,6 +17,7 @@ a internet en tiempo de ejecucion.
 - [Instalacion](#instalacion)
 - [Arranque](#arranque)
 - [Como lo usan otros programas](#como-lo-usan-otros-programas)
+- [Tool-calling](#tool-calling)
 - [Configuracion](#configuracion)
 - [Limites y evolucion](#limites-y-evolucion)
 
@@ -98,6 +99,24 @@ print(resp.choices[0].message.content)
 
 El proyecto `otro proyecto local` ya lo consume via `src/nlp/llm_client.py`, que usa
 la variable `INFERENCE_URL` (default `http://127.0.0.1:8200/v1`).
+
+## Tool-calling
+
+El endpoint `POST /v1/chat/completions` acepta el campo `tools` (lista de funciones
+estilo OpenAI). Cuando el modelo decide invocar una herramienta, la respuesta incluye
+`choices[0].message.tool_calls` con la funcion elegida y `finish_reason="tool_calls"`.
+Si no invoca herramienta, la respuesta es texto plano identica a la de antes.
+
+**Acoplamiento al modelo:** el parser interno (`tool_parsing.py`) esta ajustado al
+formato Hermes/Qwen3 (`<tool_call>{...}</tool_call>`). Si el modelo se reemplaza por
+uno que use un formato diferente (p. ej. Llama 3), `tool_parsing.py` debe reescribirse
+para ese formato nuevo; el contrato HTTP no cambia.
+
+Gate G3 (requiere modelo en la iGPU):
+
+```cmd
+.venv\Scripts\python.exe smoke_tools.py
+```
 
 ## Configuracion
 
