@@ -12,7 +12,7 @@ import uuid
 
 from flask import Flask, Response, jsonify, request, stream_with_context
 
-from tool_parsing import parse_tool_calls, strip_tool_calls
+from tool_parsing import parse_tool_calls, strip_think, strip_tool_calls
 
 
 def _completion(text: str, model_name: str) -> dict:
@@ -87,6 +87,7 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov") -> Flask:
         tools = body.get("tools")
         text = engine.generate(messages, max_new_tokens=max_tokens,
                                temperature=temperature, tools=tools)
+        text = strip_think(text)
         if tools:
             calls = parse_tool_calls(text)
             if calls:

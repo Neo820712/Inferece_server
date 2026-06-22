@@ -1,4 +1,4 @@
-from tool_parsing import parse_tool_calls, strip_tool_calls
+from tool_parsing import parse_tool_calls, strip_think, strip_tool_calls
 
 
 def test_parsea_una_llamada():
@@ -22,3 +22,23 @@ def test_varias_llamadas():
 def test_strip_deja_solo_texto():
     txt = 'hola <tool_call>{"name":"a","arguments":{}}</tool_call> mundo'
     assert strip_tool_calls(txt) == "hola  mundo".strip()
+
+
+# ── strip_think ──────────────────────────────────────────────────────
+
+def test_strip_think_bloque_completo():
+    assert strip_think("<think>razonamiento\nmultilinea</think>Hola") == "Hola"
+
+
+def test_strip_think_bloque_vacio():
+    assert strip_think("<think> </think> aclarar") == "aclarar"
+
+
+def test_strip_think_etiquetas_sueltas():
+    result = strip_think("<think>sin cierre y </think>parcial<think> sobrante")
+    assert "<think>" not in result
+    assert "</think>" not in result
+
+
+def test_strip_think_texto_normal():
+    assert strip_think("El 125U tiene 8 nucleos.") == "El 125U tiene 8 nucleos."

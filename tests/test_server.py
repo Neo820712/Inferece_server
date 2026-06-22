@@ -43,6 +43,16 @@ class FakeEngine:
         yield "texto"
 
 
+class FakeEngineWithThink:
+    """Motor que devuelve un bloque <think> vacio seguido de texto."""
+
+    def generate(self, messages, max_new_tokens=512, temperature=0.0, tools=None) -> str:
+        return "<think>\n\n</think>Hola"
+
+    def stream(self, messages, max_new_tokens=512, temperature=0.0):
+        yield "texto"
+
+
 @pytest.fixture
 def client():
     app = create_app(FakeEngine(), model_name="test-model")
@@ -84,3 +94,27 @@ def test_sin_tools_respuesta_igual_que_antes(client):
     assert choice["finish_reason"] == "stop"
     assert "8 nucleos" in choice["message"]["content"]
     assert "tool_calls" not in choice["message"]
+
+
+# ── Tests de limpieza de <think> ─────────────────────────────────────
+
+@pytest.fixture
+def client_think():
+    app = create_app(FakeEngineWithThink(), model_name="test-model")
+    app.config["TESTING"] = True
+    with app.test_client() as c:
+        yield c
+
+
+def test_think_tags_eliminados_plain(client_think):
+    payload = {
+        "messages": [{"role": "user", "content": "hola"}],
+    }
+    resp = client_think.post("/v1/chat/completions",
+                             data=json.dumps(payload),
+                             content_type="application/json")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    content = data["choices"][0]["message"]["content"]
+    assert content == "Hola"
+    assert "<think>" not in content

@@ -11,6 +11,14 @@ import re
 import uuid
 
 _TOOL_CALL_RE = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.DOTALL)
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def strip_think(text: str) -> str:
+    """Elimina bloques <think>...</think> y etiquetas sueltas del content del LLM."""
+    text = _THINK_RE.sub("", text or "")
+    text = text.replace("<think>", "").replace("</think>", "")
+    return text.strip()
 
 
 def parse_tool_calls(text: str):
