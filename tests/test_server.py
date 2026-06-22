@@ -67,6 +67,7 @@ def test_con_tools_devuelve_tool_calls(client):
     assert len(tool_calls) == 1
     assert tool_calls[0]["function"]["name"] == "comparar"
     assert tool_calls[0]["type"] == "function"
+    assert isinstance(tool_calls[0]["function"]["arguments"], str)
     assert '"refs"' in tool_calls[0]["function"]["arguments"]
 
 
