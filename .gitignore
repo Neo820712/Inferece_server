@@ -1,0 +1,29 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Modelos descargados (grandes, se regeneran con setup)
+models/
+
+# Bytecode y cache de Python
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+
+# Asistentes de IA
+.claude/
+CLAUDE.md
+superpowers/
+docs/superpowers/
+
+# Artefactos del SO / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
