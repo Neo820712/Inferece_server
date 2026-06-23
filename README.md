@@ -46,8 +46,8 @@ setup.bat
 ```
 
 Crea el entorno `.venv`, instala dependencias y obtiene el modelo. Si ya tienes el modelo
-descargado en el proyecto `otro proyecto local`, lo **copia** desde ahi (no vuelve a
-descargar); si no, lo baja de Hugging Face (`OpenVINO/Qwen3-4B-int4-ov`).
+descargado localmente, define la variable `MODEL_SRC` con su ruta y lo **copia** desde ahi
+(no vuelve a descargar); si no, lo baja de Hugging Face (`OpenVINO/Qwen3-4B-int4-ov`).
 
 ## Arranque
 
@@ -97,8 +97,8 @@ resp = client.chat.completions.create(model="qwen3-4b-int4-ov",
 print(resp.choices[0].message.content)
 ```
 
-El proyecto `otro proyecto local` ya lo consume via `src/nlp/llm_client.py`, que usa
-la variable `INFERENCE_URL` (default `http://127.0.0.1:8200/v1`).
+Cualquier cliente compatible con la API de OpenAI puede consumirlo apuntando a su URL
+base (default `http://127.0.0.1:8200/v1`).
 
 ## Tool-calling
 
