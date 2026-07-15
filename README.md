@@ -123,8 +123,13 @@ Gate G3 (requiere modelo en la iGPU):
 
 El endpoint `POST /v1/audio/transcriptions` transcribe audio WAV (PCM16 mono 16kHz) con
 Whisper sobre OpenVINO GenAI. Al arrancar, `server.py` intenta cargar el modelo desde
-`WHISPER_MODEL_DIR` en `WHISPER_DEVICE` (NPU por defecto, cae a CPU si falla); si no
-encuentra el modelo, el servidor sigue funcionando sin voz (el endpoint responde 503).
+`WHISPER_MODEL_DIR` en `WHISPER_DEVICE` (CPU por defecto); si no encuentra el modelo, el
+servidor sigue funcionando sin voz (el endpoint responde 503).
+
+El default es CPU porque el decoder autoregresivo de Whisper no inicializa en la NPU con
+esta version de OpenVINO (falla con `Check '!self_attn'` y cae a CPU igual). El motor
+`WhisperEngine` mantiene el fallback NPU->CPU: poner `WHISPER_DEVICE=NPU` reintenta la NPU
+(util si una futura version de OpenVINO la soporta) y cae a CPU si sigue sin arrancar.
 
 Convertir el modelo Whisper a OpenVINO IR (una vez, requiere `optimum-intel`):
 
@@ -146,7 +151,7 @@ Variables de entorno (opcionales):
 - `INFERENCE_DEVICE` — `GPU` (default, iGPU Arc), `NPU` o `CPU`.
 - `INFERENCE_PORT` — puerto (default `8200`).
 - `INFERENCE_MODEL_DIR` — ruta a otra carpeta de modelo OV IR.
-- `WHISPER_DEVICE` — `NPU` (default), `GPU` o `CPU`.
+- `WHISPER_DEVICE` — `CPU` (default), `NPU` (cae a CPU si no arranca) o `GPU`.
 - `WHISPER_MODEL_DIR` — ruta a la carpeta del modelo Whisper OV IR (default `models/whisper-medium-ov`).
 
 ## Limites y evolucion

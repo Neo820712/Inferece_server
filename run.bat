@@ -14,8 +14,9 @@ if not exist "%VENV%\Scripts\python.exe" (
 REM Dispositivo: GPU (iGPU Arc) por defecto. Cambia a NPU o CPU si lo necesitas.
 if "%INFERENCE_DEVICE%"=="" set INFERENCE_DEVICE=GPU
 
-REM Whisper: NPU por defecto (el LLM usa la iGPU). Cae a CPU si NPU falla.
-if "%WHISPER_DEVICE%"=="" set WHISPER_DEVICE=NPU
+REM Whisper: CPU por defecto. El decoder autoregresivo no arranca en la NPU con esta
+REM version de OpenVINO (cae a CPU igual); usar WHISPER_DEVICE=NPU para reintentar en el futuro.
+if "%WHISPER_DEVICE%"=="" set WHISPER_DEVICE=CPU
 
 "%VENV%\Scripts\python.exe" "%HERE%server.py"
 pause

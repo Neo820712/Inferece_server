@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     whisper_dir = os.environ.get(
         "WHISPER_MODEL_DIR", os.path.join(HERE, "models", "whisper-medium-ov"))
-    whisper_device = os.environ.get("WHISPER_DEVICE", "NPU")
+    whisper_device = os.environ.get("WHISPER_DEVICE", "CPU")
     transcriber = None
     if os.path.isdir(whisper_dir):
         print(f"[whisper] Cargando modelo en {whisper_device}: {whisper_dir}")

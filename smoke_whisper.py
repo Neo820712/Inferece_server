@@ -13,7 +13,7 @@ from whisper_engine import WhisperEngine
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MODEL = os.environ.get("WHISPER_MODEL_DIR", os.path.join(HERE, "models", "whisper-medium-ov"))
-DEVICE = os.environ.get("WHISPER_DEVICE", "NPU")
+DEVICE = os.environ.get("WHISPER_DEVICE", "CPU")
 
 
 def _load_wav(path):
