@@ -14,5 +14,8 @@ if not exist "%VENV%\Scripts\python.exe" (
 REM Dispositivo: GPU (iGPU Arc) por defecto. Cambia a NPU o CPU si lo necesitas.
 if "%INFERENCE_DEVICE%"=="" set INFERENCE_DEVICE=GPU
 
+REM Whisper: NPU por defecto (el LLM usa la iGPU). Cae a CPU si NPU falla.
+if "%WHISPER_DEVICE%"=="" set WHISPER_DEVICE=NPU
+
 "%VENV%\Scripts\python.exe" "%HERE%server.py"
 pause

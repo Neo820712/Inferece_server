@@ -18,6 +18,7 @@ a internet en tiempo de ejecucion.
 - [Arranque](#arranque)
 - [Como lo usan otros programas](#como-lo-usan-otros-programas)
 - [Tool-calling](#tool-calling)
+- [Voz (Whisper)](#voz-whisper)
 - [Configuracion](#configuracion)
 - [Limites y evolucion](#limites-y-evolucion)
 
@@ -118,6 +119,26 @@ Gate G3 (requiere modelo en la iGPU):
 .venv\Scripts\python.exe smoke_tools.py
 ```
 
+## Voz (Whisper)
+
+El endpoint `POST /v1/audio/transcriptions` transcribe audio WAV (PCM16 mono 16kHz) con
+Whisper sobre OpenVINO GenAI. Al arrancar, `server.py` intenta cargar el modelo desde
+`WHISPER_MODEL_DIR` en `WHISPER_DEVICE` (NPU por defecto, cae a CPU si falla); si no
+encuentra el modelo, el servidor sigue funcionando sin voz (el endpoint responde 503).
+
+Convertir el modelo Whisper a OpenVINO IR (una vez, requiere `optimum-intel`):
+
+```cmd
+pip install "optimum-intel[openvino]"
+optimum-cli export openvino --model openai/whisper-medium --weight-format int8 models/whisper-medium-ov
+```
+
+Gate de voz (requiere el modelo convertido y hardware):
+
+```cmd
+.venv\Scripts\python.exe smoke_whisper.py
+```
+
 ## Configuracion
 
 Variables de entorno (opcionales):
@@ -125,6 +146,8 @@ Variables de entorno (opcionales):
 - `INFERENCE_DEVICE` — `GPU` (default, iGPU Arc), `NPU` o `CPU`.
 - `INFERENCE_PORT` — puerto (default `8200`).
 - `INFERENCE_MODEL_DIR` — ruta a otra carpeta de modelo OV IR.
+- `WHISPER_DEVICE` — `NPU` (default), `GPU` o `CPU`.
+- `WHISPER_MODEL_DIR` — ruta a la carpeta del modelo Whisper OV IR (default `models/whisper-medium-ov`).
 
 ## Limites y evolucion
 

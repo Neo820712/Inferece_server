@@ -139,6 +139,24 @@ if __name__ == "__main__":
 
     print(f"[inference] Cargando modelo en {device}: {model_dir}")
     print("[inference] (la primera carga puede tardar ~20 s)")
-    app = create_app(OVEngine(model_dir, device))
+
+    from whisper_engine import WhisperEngine
+
+    whisper_dir = os.environ.get(
+        "WHISPER_MODEL_DIR", os.path.join(HERE, "models", "whisper-medium-ov"))
+    whisper_device = os.environ.get("WHISPER_DEVICE", "NPU")
+    transcriber = None
+    if os.path.isdir(whisper_dir):
+        print(f"[whisper] Cargando modelo en {whisper_device}: {whisper_dir}")
+        try:
+            transcriber = WhisperEngine(whisper_dir, whisper_device)
+            print(f"[whisper] Listo en {transcriber.active_device}.")
+        except Exception as exc:
+            print(f"[whisper] No se pudo cargar ({str(exc)[:160]}); "
+                  f"la app seguira sin voz.")
+    else:
+        print(f"[whisper] Sin modelo en {whisper_dir}; la app seguira sin voz.")
+
+    app = create_app(OVEngine(model_dir, device), transcriber=transcriber)
     print(f"[inference] Listo. Escuchando en http://127.0.0.1:{port}/v1")
     app.run(host="127.0.0.1", port=port)
