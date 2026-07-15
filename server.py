@@ -7,8 +7,10 @@ La capa HTTP recibe el motor por inyeccion (create_app(engine)); no importa open
 modo que se puede testear con un motor falso. El motor real se construye solo en __main__.
 """
 import json
+import struct
 import time
 import uuid
+import wave
 
 from flask import Flask, Response, jsonify, request, stream_with_context
 
@@ -62,8 +64,17 @@ def _sse(engine, messages, max_tokens, temperature, model_name):
     yield "data: [DONE]\n\n"
 
 
-def create_app(engine, model_name: str = "qwen3-4b-int4-ov") -> Flask:
+def create_app(engine, model_name: str = "qwen3-4b-int4-ov", transcriber=None) -> Flask:
     app = Flask(__name__)
+
+    def _read_wav_mono16k(stream):
+        import numpy as np
+        with wave.open(stream, "rb") as w:
+            if w.getnchannels() != 1 or w.getframerate() != 16000 or w.getsampwidth() != 2:
+                raise ValueError("se requiere WAV PCM16 mono 16kHz")
+            frames = w.readframes(w.getnframes())
+        ints = struct.unpack("<" + "h" * (len(frames) // 2), frames)
+        return np.asarray(ints, dtype="float32") / 32768.0
 
     @app.get("/v1/models")
     def models():
@@ -93,6 +104,24 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov") -> Flask:
             if calls:
                 return jsonify(_completion_tool_calls(calls, strip_tool_calls(text), model_name))
         return jsonify(_completion(text, model_name))
+
+    @app.post("/v1/audio/transcriptions")
+    def transcriptions():
+        if transcriber is None:
+            return jsonify({"error": "transcripcion de audio no disponible"}), 503
+        f = request.files.get("file")
+        if f is None:
+            return jsonify({"error": "file requerido"}), 400
+        language = (request.form.get("language") or "es").strip()[:8] or "es"
+        try:
+            samples = _read_wav_mono16k(f.stream)
+        except Exception:
+            return jsonify({"error": "audio invalido (se espera WAV PCM16 mono 16kHz)"}), 400
+        try:
+            text = transcriber.transcribe(samples, language=language)
+        except Exception as exc:
+            return jsonify({"error": "fallo la transcripcion", "detail": str(exc)[:200]}), 500
+        return jsonify({"text": text or ""})
 
     return app
 

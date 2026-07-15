@@ -118,3 +118,59 @@ def test_think_tags_eliminados_plain(client_think):
     content = data["choices"][0]["message"]["content"]
     assert content == "Hola"
     assert "<think>" not in content
+
+
+# ── Tests de transcripcion de audio ──────────────────────────────────────
+
+import io
+import wave
+import struct
+import numpy as np
+
+
+class _FakeTranscriber:
+    def __init__(self, text="hola mundo"):
+        self.text = text
+        self.calls = []
+
+    def transcribe(self, samples, language="es"):
+        self.calls.append((len(samples), language))
+        return self.text
+
+
+def _wav_bytes(hz=16000, seconds=0.1):
+    n = int(hz * seconds)
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(hz)
+        w.writeframes(struct.pack("<" + "h" * n, *([0] * n)))
+    return buf.getvalue()
+
+
+def test_transcriptions_ok():
+    tr = _FakeTranscriber("compara el 165H")
+    app = create_app(engine=None, transcriber=tr)
+    client = app.test_client()
+    data = {"file": (io.BytesIO(_wav_bytes()), "a.wav"), "language": "es"}
+    r = client.post("/v1/audio/transcriptions", data=data,
+                    content_type="multipart/form-data")
+    assert r.status_code == 200
+    assert r.get_json()["text"] == "compara el 165H"
+    assert tr.calls and tr.calls[0][1] == "es"
+
+
+def test_transcriptions_unavailable_without_transcriber():
+    app = create_app(engine=None, transcriber=None)
+    r = app.test_client().post("/v1/audio/transcriptions",
+                               data={"file": (io.BytesIO(_wav_bytes()), "a.wav")},
+                               content_type="multipart/form-data")
+    assert r.status_code == 503
+
+
+def test_transcriptions_missing_file():
+    app = create_app(engine=None, transcriber=_FakeTranscriber())
+    r = app.test_client().post("/v1/audio/transcriptions", data={},
+                               content_type="multipart/form-data")
+    assert r.status_code == 400
