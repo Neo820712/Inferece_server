@@ -3,6 +3,7 @@
 # tambien compatible con 3.14).
 openvino-genai==2026.0.0
 openvino==2026.0.0
+numpy>=1.26
 flask==3.0.3
 huggingface-hub==0.27.0
 

@@ -174,3 +174,25 @@ def test_transcriptions_missing_file():
     r = app.test_client().post("/v1/audio/transcriptions", data={},
                                content_type="multipart/form-data")
     assert r.status_code == 400
+
+
+def _wav_bytes_stereo(hz=44100, seconds=0.05):
+    """Construye WAV estéreo con frecuencia opcional (para validar rechazo de formatos)."""
+    n = int(hz * seconds)
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(hz)
+        w.writeframes(struct.pack("<" + "h" * (n * 2), *([0] * (n * 2))))
+    return buf.getvalue()
+
+
+def test_transcriptions_wav_invalido_estéreo_da_400():
+    app = create_app(engine=None, transcriber=_FakeTranscriber())
+    client = app.test_client()
+    data = {"file": (io.BytesIO(_wav_bytes_stereo()), "a.wav")}
+    r = client.post("/v1/audio/transcriptions", data=data,
+                    content_type="multipart/form-data")
+    assert r.status_code == 400
+    assert "audio invalido" in r.get_json()["error"]
