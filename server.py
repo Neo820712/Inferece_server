@@ -11,6 +11,7 @@ import struct
 import time
 import uuid
 import wave
+from datetime import datetime, timezone
 
 from flask import Flask, Response, jsonify, request, stream_with_context
 
@@ -64,6 +65,24 @@ def _sse(engine, messages, max_tokens, temperature, model_name):
     yield "data: [DONE]\n\n"
 
 
+# --- Formato Ollama (/api/chat): mismo motor por debajo, distinto "sobre" JSON ---
+def _ollama_ts() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _ollama_msg(text, model_name):
+    return {"model": model_name, "created_at": _ollama_ts(),
+            "message": {"role": "assistant", "content": text}, "done": False}
+
+
+def _ollama_ndjson(engine, messages, max_tokens, temperature, model_name):
+    for tok in engine.stream(messages, max_new_tokens=max_tokens, temperature=temperature):
+        yield json.dumps(_ollama_msg(tok, model_name), ensure_ascii=False) + "\n"
+    done = {"model": model_name, "created_at": _ollama_ts(),
+            "message": {"role": "assistant", "content": ""}, "done": True, "done_reason": "stop"}
+    yield json.dumps(done, ensure_ascii=False) + "\n"
+
+
 def create_app(engine, model_name: str = "qwen3-4b-int4-ov", transcriber=None) -> Flask:
     app = Flask(__name__)
 
@@ -104,6 +123,46 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov", transcriber=None) -
             if calls:
                 return jsonify(_completion_tool_calls(calls, strip_tool_calls(text), model_name))
         return jsonify(_completion(text, model_name))
+
+    @app.get("/api/tags")
+    def ollama_tags():
+        # Lista de modelos estilo Ollama (para clientes que sondean /api/tags).
+        return jsonify({"models": [{
+            "name": model_name, "model": model_name,
+            "modified_at": _ollama_ts(), "size": 0, "digest": "", "details": {}}]})
+
+    @app.post("/api/chat")
+    def ollama_chat():
+        body = request.get_json(force=True, silent=True) or {}
+        messages = body.get("messages", [])
+        if not messages:
+            return jsonify({"error": "messages requerido"}), 400
+        opts = body.get("options") or {}
+        try:
+            max_tokens = int(opts.get("num_predict", 512))
+            temperature = float(opts.get("temperature", 0.0))
+        except (TypeError, ValueError):
+            return jsonify({"error": "parametro invalido"}), 400
+        if body.get("stream", True):  # Ollama transmite por defecto
+            return Response(stream_with_context(
+                _ollama_ndjson(engine, messages, max_tokens, temperature, model_name)),
+                mimetype="application/x-ndjson")
+        tools = body.get("tools")
+        text = engine.generate(messages, max_new_tokens=max_tokens,
+                               temperature=temperature, tools=tools)
+        text = strip_think(text)
+        message = {"role": "assistant", "content": text}
+        if tools:
+            calls = parse_tool_calls(text)
+            if calls:
+                # Ollama espera arguments como objeto, no como string (a diferencia de OpenAI).
+                message["content"] = strip_tool_calls(text)
+                message["tool_calls"] = [{"function": {
+                    "name": c["function"]["name"],
+                    "arguments": json.loads(c["function"]["arguments"]),
+                }} for c in calls]
+        return jsonify({"model": model_name, "created_at": _ollama_ts(),
+                        "message": message, "done": True, "done_reason": "stop"})
 
     @app.post("/v1/audio/transcriptions")
     def transcriptions():
