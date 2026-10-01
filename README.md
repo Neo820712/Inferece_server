@@ -1,7 +1,7 @@
 # Servidor de Inferencia (compartido)
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![OpenVINO](https://img.shields.io/badge/OpenVINO-2026.0-0068B5?logo=intel&logoColor=white)
+![OpenVINO](https://img.shields.io/badge/OpenVINO-2026.2.1-0068B5?logo=intel&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
 ![Modelo](https://img.shields.io/badge/Modelo-Qwen3--4B%20INT4-00C7FD)
 
