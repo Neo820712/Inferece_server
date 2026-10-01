@@ -1,0 +1,18 @@
+{
+  "ovms": {
+    "version": "2026.4.0",
+    "url": "https://github.com/openvinotoolkit/model_server/releases/download/v2026.4.0/ovms_windows_2026.4.0_python_on.zip",
+    "sha256": "5a022e44e794e6a9cb0f1c6c40822167dac53a36daf9af123c9411974cef1914"
+  },
+  "models": [
+    { "id": "OpenVINO/gemma-4-E4B-it-int4-ov", "pull": ["--task", "text_generation", "--target_device", "GPU"] },
+    { "id": "OpenVINO/Qwen3-Embedding-0.6B-int8-ov", "pull": ["--task", "embeddings", "--pooling", "LAST", "--target_device", "CPU"] },
+    { "id": "OpenVINO/whisper-large-v3-turbo-fp16-ov", "pull": ["--task", "speech2text", "--target_device", "NPU"] },
+    { "id": "OpenVINO/Kokoro-82M-int8-ov", "pull": ["--task", "text2speech", "--target_device", "CPU"] }
+  ],
+  "processes": {
+    "main": { "port": 8300, "servables": ["llm", "embed", "embed-ingest"] },
+    "stt": { "port": 8310, "servables": ["whisper"] },
+    "tts": { "port": 8320, "servables": ["kokoro"] }
+  }
+}

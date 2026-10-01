@@ -135,3 +135,8 @@ Variables de entorno (opcionales):
 - No metas este servicio en Docker en la notebook: el passthrough de la iGPU/NPU Intel a un
   contenedor en Windows es limitado y perderias la aceleracion. Docker es para el destino
   Xeon/Linux.
+
+## Variante con OpenVINO Model Server
+
+La carpeta [ovms/](ovms/README.md) contiene una variante multi-modelo (modelo de lenguaje,
+embeddings y voz a texto en GPU, CPU y NPU) que convive con este servidor.
