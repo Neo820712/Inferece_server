@@ -17,6 +17,12 @@ from flask import Flask, Response, jsonify, request, stream_with_context
 
 from tool_parsing import parse_tool_calls, strip_think, strip_tool_calls
 
+# Tope de generacion cuando el cliente no manda uno. Es un techo, no un objetivo: una
+# respuesta corta termina antes y no cuesta mas. Tiene que dar cabida al razonamiento
+# de los modelos que piensan (Qwen3 gasta 700-1350 tokens solo en el bloque <think>),
+# porque si se agota ahi la respuesta sale cortada.
+DEFAULT_MAX_TOKENS = 2048
+
 
 def _completion(text: str, model_name: str) -> dict:
     return {
@@ -106,7 +112,7 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov", transcriber=None) -
         if not messages:
             return jsonify({"error": "messages requerido"}), 400
         try:
-            max_tokens = int(body.get("max_tokens", 512))
+            max_tokens = int(body.get("max_tokens", DEFAULT_MAX_TOKENS))
             temperature = float(body.get("temperature", 0.0))
         except (TypeError, ValueError):
             return jsonify({"error": "parametro invalido"}), 400
@@ -139,7 +145,7 @@ def create_app(engine, model_name: str = "qwen3-4b-int4-ov", transcriber=None) -
             return jsonify({"error": "messages requerido"}), 400
         opts = body.get("options") or {}
         try:
-            max_tokens = int(opts.get("num_predict", 512))
+            max_tokens = int(opts.get("num_predict", DEFAULT_MAX_TOKENS))
             temperature = float(opts.get("temperature", 0.0))
         except (TypeError, ValueError):
             return jsonify({"error": "parametro invalido"}), 400

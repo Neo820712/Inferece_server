@@ -24,11 +24,12 @@ class OVEngine:
         self._ov_genai = ov_genai
 
     def _prompt(self, messages: list[dict], tools=None) -> str:
-        # Qwen3 "thinking" desactivado: se fuerza con el sufijo /no_think.
+        # Sin sufijos de modo de razonamiento: cada modelo genera como venga
+        # configurado. El " /no_think" que se anadia aqui era especifico de Qwen3 y
+        # con cualquier otro modelo entraba al prompt como texto sin significado.
         msgs = list(messages)
         if not any(m.get("role") == "system" for m in msgs):
             msgs.insert(0, {"role": "system", "content": "Eres un asistente conciso en espanol."})
-        msgs[-1] = {**msgs[-1], "content": msgs[-1]["content"] + " /no_think"}
         if tools:
             try:
                 return self.tokenizer.apply_chat_template(
@@ -51,13 +52,13 @@ class OVEngine:
         cfg.do_sample = temperature > 0.0
         return cfg
 
-    def generate(self, messages: list[dict], max_new_tokens: int = 512,
+    def generate(self, messages: list[dict], max_new_tokens: int = 2048,
                  temperature: float = 0.0, tools=None) -> str:
         result = self.pipe.generate(self._prompt(messages, tools),
                                     self._config(max_new_tokens, temperature))
         return str(result)
 
-    def stream(self, messages: list[dict], max_new_tokens: int = 512,
+    def stream(self, messages: list[dict], max_new_tokens: int = 2048,
                temperature: float = 0.0) -> Iterator[str]:
         import queue
         import threading
