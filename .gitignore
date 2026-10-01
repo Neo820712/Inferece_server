@@ -22,6 +22,12 @@ CLAUDE.md
 superpowers/
 docs/superpowers/
 
+# Pruebas y experimentos temporales
+scratch/
+
+# Cache de compilacion de OpenVINO (se regenera en la primera carga)
+ov_cache/
+
 # Artefactos del SO / editor
 Thumbs.db
 .DS_Store
