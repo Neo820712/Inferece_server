@@ -54,7 +54,9 @@ foreach ($m in $Versions.models) {
     }
     if ($local) {
         Write-Host "[instalar] Copiando $name desde $local"
-        Copy-Item $local $dest -Recurse -Force
+        # robocopy soporta rutas de mas de 260 caracteres; la historia .git del modelo no hace falta.
+        & robocopy.exe $local $dest /E /XD .git /NFL /NDL /NJH /NJS /NP | Out-Null
+        if ($LASTEXITCODE -ge 8) { throw "No se pudo copiar $name desde $local (robocopy $LASTEXITCODE)." }
     } else {
         Write-Host "[instalar] Descargando $($m.id)..."
         & ovms --pull --source_model $m.id --model_repository_path (Join-Path $Root 'models') --model_name $name @($m.pull)
