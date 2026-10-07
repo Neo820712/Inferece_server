@@ -1,9 +1,13 @@
 @echo off
 REM Arranca el servidor de inferencia compartido en http://127.0.0.1:8200/v1
 REM Doble clic para usarlo. La ventana queda abierta sirviendo; cierrala para detenerlo.
-title Servidor de Inferencia (Qwen3-4B / OpenVINO)
+title Servidor de Inferencia (OpenVINO)
 set HERE=%~dp0
 set VENV=%HERE%.venv
+
+REM Modelo: Qwen3-30B-A3B si esta descargado (mejor espanol y seguimiento de
+REM instrucciones a la misma velocidad); si no, el Qwen3-4B que instala setup.bat.
+if "%INFERENCE_MODEL_DIR%"=="" if exist "%HERE%models\qwen3-30b-a3b-int4-ov\openvino_model.xml" set INFERENCE_MODEL_DIR=%HERE%models\qwen3-30b-a3b-int4-ov
 
 if not exist "%VENV%\Scripts\python.exe" (
     echo No existe el entorno. Ejecuta setup.bat primero.

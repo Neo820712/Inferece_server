@@ -222,6 +222,8 @@ if __name__ == "__main__":
     else:
         print(f"[whisper] Sin modelo en {whisper_dir}; la app seguira sin voz.")
 
-    app = create_app(OVEngine(model_dir, device), transcriber=transcriber)
+    app = create_app(OVEngine(model_dir, device),
+                     model_name=os.path.basename(os.path.normpath(model_dir)),
+                     transcriber=transcriber)
     print(f"[inference] Listo. Escuchando en http://127.0.0.1:{port}/v1")
     app.run(host="127.0.0.1", port=port)

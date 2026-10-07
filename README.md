@@ -3,11 +3,11 @@
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![OpenVINO](https://img.shields.io/badge/OpenVINO-2026.2.1-0068B5?logo=intel&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
-![Modelo](https://img.shields.io/badge/Modelo-Qwen3--4B%20INT4-00C7FD)
+![Modelo](https://img.shields.io/badge/Modelo-Qwen3--30B--A3B%20%2F%20Qwen3--4B%20INT4-00C7FD)
 
 Servicio local de inferencia LLM, **OpenAI-compatible**, pensado para que **varios
-programas** lo compartan. Corre un modelo Qwen3-4B INT4 sobre **OpenVINO** en la iGPU Intel
-(Lunar Lake). Todo es local: el servidor solo escucha en `127.0.0.1` (loopback) y nada sale
+programas** lo compartan. Corre sobre **OpenVINO** en la iGPU Intel (Lunar Lake): Qwen3-30B-A3B
+INT4 si esta descargado en `models/qwen3-30b-a3b-int4-ov/`, y si no Qwen3-4B INT4. Todo es local: el servidor solo escucha en `127.0.0.1` (loopback) y nada sale
 a internet en tiempo de ejecucion.
 
 ## Indice
@@ -53,7 +53,7 @@ descargado localmente, define la variable `MODEL_SRC` con su ruta y lo **copia**
 ## Arranque
 
 Doble clic en `run.bat` (o desde terminal). Abre una ventana que queda sirviendo; tarda
-~20 s en cargar el modelo y luego muestra:
+~20 s en cargar el modelo (~40 s el Qwen3-30B-A3B) y luego muestra:
 
 ```
 [inference] Listo. Escuchando en http://127.0.0.1:8200/v1
