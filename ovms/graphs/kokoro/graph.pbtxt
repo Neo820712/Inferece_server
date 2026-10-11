@@ -11,7 +11,7 @@ node {
         [type.googleapis.com / mediapipe.T2sCalculatorOptions]: {
             models_path: "{{MODELS}}/Kokoro-82M-int8-ov"
             target_device: "CPU"
-            plugin_config: '{"NUM_STREAMS":"1"}'
+            plugin_config: '{"PERFORMANCE_HINT":"LATENCY"}'
             }
     }
 }
