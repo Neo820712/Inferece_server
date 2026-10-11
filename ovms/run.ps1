@@ -1,5 +1,6 @@
 # Lanza los procesos de OVMS que no esten en marcha, cada uno en su ventana con supervisor.
-#   -Detach        vuelve enseguida sin esperar a que los modelos carguen
+#   -Detach        vuelve enseguida sin esperar a que los modelos carguen; los supervisores van
+#                  sin ventana y escriben en logs\<proceso>.supervisor.log
 #   -Profile gpu   sirve Whisper en GPU en vez de NPU (metas de latencia no garantizadas)
 param([switch]$Detach, [ValidateSet('npu', 'gpu')][string]$Profile = 'npu')
 
@@ -25,9 +26,14 @@ foreach ($p in $procesos) {
         Write-Host "[ovms] '$($p.Name)' ya esta escuchando en $port."
         continue
     }
-    Start-Process powershell -WindowStyle Minimized -ArgumentList @(
+    $argumentos = @(
         '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $PSScriptRoot 'supervise.ps1')`"",
         '-Name', $p.Name, '-Port', $port, '-Config', "`"$(Join-Path $Root $p.Config)`"")
+    if ($Detach) {
+        Start-Process powershell -WindowStyle Hidden -ArgumentList ($argumentos + '-Oculto')
+    } else {
+        Start-Process powershell -WindowStyle Minimized -ArgumentList $argumentos
+    }
     Write-Host "[ovms] Lanzado '$($p.Name)' en 127.0.0.1:$port."
 }
 

@@ -1,8 +1,11 @@
 # Mantiene vivo un proceso de OVMS: lo lanza y lo relanza si muere.
 # Se detiene solo tras 3 caidas en 60 segundos.
-param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][int]$Port, [Parameter(Mandatory)][string]$Config)
+#   -Oculto   sin ventana: lo que mostraria va a logs\<Name>.supervisor.log y no espera Enter al rendirse
+param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][int]$Port, [Parameter(Mandatory)][string]$Config,
+      [switch]$Oculto)
 
 . (Join-Path $PSScriptRoot 'common.ps1')
+if ($Oculto) { Start-Transcript -Path (Join-Path $LogsDir "$Name.supervisor.log") -Append | Out-Null }
 $Host.UI.RawUI.WindowTitle = "OVMS $Name ($Port)"
 Set-Content -Path (Join-Path $RunDir "$Name.supervisor.pid") -Value $PID
 . (Join-Path $OvmsDir 'setupvars.ps1') | Out-Null
@@ -18,7 +21,7 @@ while ($true) {
     if ($caidas.Count -ge 3) {
         Write-Host "[ovms] '$Name' cayo 3 veces en un minuto. No se relanza. Revisa $LogsDir\$Name.log" -ForegroundColor Red
         Remove-Item (Join-Path $RunDir "$Name.supervisor.pid") -Force -ErrorAction SilentlyContinue
-        Read-Host 'Enter para cerrar'
+        if (-not $Oculto) { Read-Host 'Enter para cerrar' }
         exit 1
     }
     Start-Sleep -Seconds 1
