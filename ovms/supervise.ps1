@@ -1,5 +1,5 @@
 # Mantiene vivo un proceso de OVMS: lo lanza y lo relanza si muere o si deja de responder
-# (4 consultas seguidas a /v1/config sin respuesta: un proceso caido que Windows retiene para
+# (8 consultas seguidas a /v1/config sin respuesta, unos 3 minutos: un proceso caido que Windows retiene para
 # el reporte de errores sigue vivo pero ya no atiende). Se detiene solo tras 3 caidas en 60 segundos.
 #   -Oculto   sin ventana: lo que mostraria va a logs\<Name>.supervisor.log y no espera Enter al rendirse
 param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][int]$Port, [Parameter(Mandatory)][string]$Config,
@@ -22,7 +22,7 @@ while ($true) {
     while (-not $p.WaitForExit(15000)) {
         try { $null = Invoke-WebRequest "http://127.0.0.1:$Port/v1/config" -UseBasicParsing -TimeoutSec 10; $fallos = 0 }
         catch { $fallos++ }
-        if ($fallos -ge 4) {
+        if ($fallos -ge 8) {
             Write-Host "[$(Get-Date -Format HH:mm:ss)] OVMS '$Name' no responde. Se termina." -ForegroundColor Yellow
             Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
             $p.WaitForExit()

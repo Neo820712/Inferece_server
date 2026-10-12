@@ -66,7 +66,7 @@ stop.bat -Name stt detiene un proceso
 ```
 
 Cada proceso corre en su ventana con un supervisor que lo relanza si muere o si deja de
-responder (cuatro consultas seguidas a `/v1/config` sin respuesta, unos 100 s). Tras tres
+responder (ocho consultas seguidas a `/v1/config` sin respuesta, unos 3 minutos). Tras tres
 caidas en un minuto deja de relanzar y lo avisa.
 
 Comprobacion:
