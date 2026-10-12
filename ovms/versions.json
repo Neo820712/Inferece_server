@@ -1,8 +1,8 @@
 {
   "ovms": {
-    "version": "2026.4.0",
-    "url": "https://github.com/openvinotoolkit/model_server/releases/download/v2026.4.0/ovms_windows_2026.4.0_python_on.zip",
-    "sha256": "5a022e44e794e6a9cb0f1c6c40822167dac53a36daf9af123c9411974cef1914"
+    "version": "2026.4.1",
+    "url": "https://github.com/openvinotoolkit/model_server/releases/download/v2026.4.1/ovms_windows_2026.4.1_python_on.zip",
+    "sha256": "aa79a0ae3b858356ba550978e397a8e8876a9d2706ffe4041b1dfd3f32cb8ce4"
   },
   "models": [
     { "id": "OpenVINO/gemma-4-E4B-it-int4-ov", "pull": ["--task", "text_generation", "--target_device", "GPU"] },

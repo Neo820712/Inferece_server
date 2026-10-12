@@ -50,7 +50,7 @@ tarda unos 4 minutos y se hace una sola vez.
 Con los archivos ya descargados (sin red):
 
 ```cmd
-install.bat -ModelsFrom D:\modelos -OvmsZip D:\ovms_windows_2026.4.0_python_on.zip
+install.bat -ModelsFrom D:\modelos -OvmsZip D:\ovms_windows_2026.4.1_python_on.zip
 ```
 
 `-ModelsFrom` espera una carpeta con una subcarpeta por modelo (con o sin el prefijo
