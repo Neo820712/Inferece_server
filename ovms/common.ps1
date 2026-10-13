@@ -68,6 +68,10 @@ function Stop-OvmsProcess([string]$Name) {
         Stop-Process -Id $sp -Force -Confirm:$false -ErrorAction SilentlyContinue
         Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
     }
+    # Sin el .pid, el supervisor vivo relanzaria ovms.exe: tambien se lo busca por su linea de comandos.
+    Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+        Where-Object { $_.CommandLine -match "supervise\.ps1`"? -Name $Name\b" } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -Confirm:$false -ErrorAction SilentlyContinue }
     $port = $Versions.processes.$Name.port
     Get-CimInstance Win32_Process -Filter "Name='ovms.exe'" |
         Where-Object { $_.CommandLine -match "--rest_port $port\b" } |
