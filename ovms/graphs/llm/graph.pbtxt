@@ -19,7 +19,7 @@
             max_num_seqs:256,
             device: "GPU",
             models_path: "{{MODELS}}/gemma-4-E4B-it-int4-ov",
-            plugin_config: '{"CACHE_DIR":"{{CACHE}}"}',
+            plugin_config: '{"CACHE_DIR":"{{CACHE}}","prompt_lookup":true}',
             enable_prefix_caching: true,
             cache_size: 2,
         }
