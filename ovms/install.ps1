@@ -32,7 +32,9 @@ if (-not (Test-Path (Join-Path $OvmsDir 'ovms.exe'))) {
     }
     $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
     if ($hash -ne $Versions.ovms.sha256) { throw "El zip de OVMS no coincide con el hash esperado ($hash)." }
-    & tar.exe -xf $zip -C $Root
+    # El tar de Windows por ruta: con las herramientas Unix de Git en el PATH, tar.exe seria el de GNU,
+    # que lee 'C:' como un host remoto.
+    & (Join-Path $env:SystemRoot 'System32\tar.exe') -xf $zip -C $Root
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo descomprimir OVMS.' }
     Remove-Item $zip -Force
 }
